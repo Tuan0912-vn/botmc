@@ -1,7 +1,10 @@
 const mineflayer = require('mineflayer');
 const express = require('express');
-const app = express();
+const { pathfinder, Movements, goals } = require('mineflayer-pathfinder');
+const pvp = require('mineflayer-pvp').plugin;
+const Vec3 = require('vec3').Vec3;
 
+const app = express();
 app.get('/', (req, res) => res.send("✅ Bot is running..."));
 app.listen(3000, () => console.log("🌐 Web server online."));
 
@@ -15,12 +18,16 @@ function createBot() {
     version: false
   });
 
+  bot.loadPlugin(pvp);
+  bot.loadPlugin(pathfinder);
+
   bot.on('spawn', () => {
     console.log("✅ Bot has joined the server!");
 
     let moving = false;
     const directions = ['forward', 'back', 'left', 'right'];
 
+    // 🔁 Anti-AFK movement
     setInterval(() => {
       if (!bot.player || !bot.player.entity || moving) return;
 
@@ -42,9 +49,9 @@ function createBot() {
 
       if (isClear) {
         moving = true;
-        console.log(`🚶 Moving ${direction}...`);
         bot.setControlState('jump', true);
         bot.setControlState(direction, true);
+        console.log(`🚶 Moving ${direction}...`);
 
         setTimeout(() => {
           bot.setControlState(direction, false);
@@ -55,19 +62,37 @@ function createBot() {
       } else {
         console.log(`⛔ Blocked moving ${direction}, skipping.`);
       }
-    }, 8000); // Di chuyển nhẹ mỗi 8s
+    }, 8000);
 
-    // Xoay đầu ngẫu nhiên để fake hoạt động
+    // 👀 Fake nhìn quanh để tránh AFK kick
     setInterval(() => {
       const yaw = Math.random() * Math.PI * 2;
       const pitch = Math.random() * 0.5 - 0.25;
       bot.look(yaw, pitch, true);
       console.log("👀 Bot changed look direction.");
-    }, 10000); // Mỗi 10s quay đầu
+    }, 10000);
+
+    // ⚔️ Auto attack mob hostile gần bot
+    setInterval(() => {
+      if (!bot.entity || !bot.entities) return;
+
+      const filterHostile = entity =>
+        entity.type === 'mob' &&
+        entity.position.distanceTo(bot.entity.position) < 4 &&
+        ['zombie', 'skeleton', 'creeper', 'spider', 'enderman'].includes(entity.name);
+
+      const target = Object.values(bot.entities).find(filterHostile);
+
+      if (target) {
+        bot.lookAt(target.position.offset(0, target.height, 0), true);
+        bot.attack(target);
+        console.log(`⚔️ Attacking ${target.name}!`);
+      }
+    }, 1000);
   });
 
   bot.on('end', () => {
-    console.log("❌ Bot bị disconnect (có thể do Aternos tắt server), reconnect sau 5s...");
+    console.log("❌ Bot disconnected (maybe Aternos server offline), retrying...");
     setTimeout(createBot, 5000);
   });
 
