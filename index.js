@@ -18,7 +18,6 @@ function createBot() {
   bot.on('spawn', () => {
     console.log("✅ Bot has joined the server!");
 
-    // Move randomly and auto-jump every 5 seconds
     const directions = ['forward', 'back', 'left', 'right'];
     setInterval(() => {
       if (!bot.player || !bot.player.entity) return;
@@ -52,12 +51,12 @@ function createBot() {
   });
 
   bot.on('end', () => {
-    console.log("❌ Bot disconnected, trying to reconnect...");
+    console.log("❌ Bot disconnected (maybe Aternos server offline), trying to reconnect...");
     setTimeout(createBot, 5000);
   });
 
   bot.on('error', (err) => {
-    console.log(`❗ Error: ${err}`);
+    console.log(`❗ Error: ${err.message}`);
   });
 }
 
