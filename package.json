@@ -1,18 +1,22 @@
 {
   "name": "minecraft-afk-bot",
   "version": "1.0.0",
-  "description": "AFK bot di chuyển ngẫu nhiên cho server Aternos",
+  "description": "AFK Bot for Minecraft using mineflayer",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node --no-deprecation index.js"
   },
+  "keywords": [
+    "minecraft",
+    "mineflayer",
+    "afk",
+    "bot",
+    "aternos"
+  ],
+  "author": "Tuấn",
+  "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
-    "mineflayer": "^4.15.0"
-  },
-  "engines": {
-    "node": ">=16"
-  },
-  "author": "tuan",
-  "license": "MIT"
+    "mineflayer": "^4.16.1"
+  }
 }
