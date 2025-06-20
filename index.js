@@ -2,7 +2,7 @@ const mineflayer = require('mineflayer');
 const express = require('express');
 const app = express();
 
-app.get('/', (req, res) => res.send("✅ Bot đang chạy..."));
+app.get('/', (req, res) => res.send("✅ Bot is running..."));
 app.listen(3000, () => console.log("🌐 Web server online."));
 
 let bot;
@@ -16,31 +16,48 @@ function createBot() {
   });
 
   bot.on('spawn', () => {
-    console.log("✅ Bot đã vào server!");
+    console.log("✅ Bot has joined the server!");
 
-    // Di chuyển ngẫu nhiên mỗi 5 giây để chống AFK
+    // Move randomly and auto-jump every 5 seconds
     const directions = ['forward', 'back', 'left', 'right'];
     setInterval(() => {
       if (!bot.player || !bot.player.entity) return;
 
       const direction = directions[Math.floor(Math.random() * directions.length)];
-      console.log(`🚶 Bot đang đi ${direction}...`);
+      const pos = bot.entity.position;
+      const nextPos = pos.clone();
 
-      bot.setControlState(direction, true);
-      setTimeout(() => {
-        bot.setControlState(direction, false);
-        console.log("🛑 Bot dừng lại.");
-      }, 2000);
+      if (direction === 'forward') nextPos.z -= 1;
+      else if (direction === 'back') nextPos.z += 1;
+      else if (direction === 'left') nextPos.x -= 1;
+      else if (direction === 'right') nextPos.x += 1;
+
+      const block = bot.blockAt(nextPos);
+      const blockAbove = bot.blockAt(nextPos.offset(0, 1, 0));
+
+      if ((!block || block.boundingBox === 'empty') && (!blockAbove || blockAbove.boundingBox === 'empty')) {
+        console.log(`🚶 Bot is moving ${direction}...`);
+        bot.setControlState('jump', true);
+        bot.setControlState(direction, true);
+
+        setTimeout(() => {
+          bot.setControlState(direction, false);
+          bot.setControlState('jump', false);
+          console.log("🛑 Bot stopped.");
+        }, 2000);
+      } else {
+        console.log(`⛔ Blocked when trying to move ${direction}, skipping.`);
+      }
     }, 5000);
   });
 
   bot.on('end', () => {
-    console.log("❌ Bot bị disconnect, đang reconnect...");
+    console.log("❌ Bot disconnected, trying to reconnect...");
     setTimeout(createBot, 5000);
   });
 
   bot.on('error', (err) => {
-    console.log(`❗ Lỗi: ${err}`);
+    console.log(`❗ Error: ${err}`);
   });
 }
 
