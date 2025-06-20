@@ -1,27 +1,18 @@
 {
   "name": "minecraft-afk-bot",
   "version": "1.0.0",
-  "description": "Bot chống AFK cho server Aternos bằng Mineflayer + Railway",
+  "description": "AFK bot di chuyển ngẫu nhiên cho server Aternos",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "mineflayer": "^4.15.0",
-    "vec3": "^0.1.7"
+    "mineflayer": "^4.15.0"
   },
   "engines": {
     "node": ">=16"
   },
-  "keywords": [
-    "minecraft",
-    "bot",
-    "mineflayer",
-    "afk",
-    "aternos",
-    "railway"
-  ],
   "author": "tuan",
   "license": "MIT"
 }
