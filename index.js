@@ -6,22 +6,22 @@ app.get('/', (req, res) => res.send("✅ Bot is running..."));
 app.listen(3000, () => console.log("🌐 Web server online."));
 
 let bot;
+let moving = false;
+const directions = ['forward', 'back', 'left', 'right'];
 
 function createBot() {
   bot = mineflayer.createBot({
-    host: "letmecookVN.aternos.me",
-    port: 46967,
-    username: "AFK_Bot",
-    version: false
+    host: "letmecookVN.aternos.me", // ← Server IP
+    port: 46967,                    // ← Server port
+    username: "TuanDev",           // ← Tên bot (nên đặt giống người chơi thật)
+    version: false                 // ← Tự chọn version theo server
   });
 
   bot.on('spawn', () => {
-    console.log("✅ Bot has joined the server!");
+    console.log("✅ Bot đã vào server!");
 
-    let moving = false;
-    const directions = ['forward', 'back', 'left', 'right'];
-
-    setInterval(() => {
+    // Di chuyển random để tránh AFK detect
+    function randomMove() {
       if (!bot.player || !bot.player.entity || moving) return;
 
       const direction = directions[Math.floor(Math.random() * directions.length)];
@@ -42,47 +42,70 @@ function createBot() {
 
       if (isClear) {
         moving = true;
-        console.log(`🚶 Moving ${direction}...`);
         bot.setControlState('jump', true);
         bot.setControlState(direction, true);
+        console.log(`🚶 Di chuyển ${direction}...`);
 
         setTimeout(() => {
           bot.setControlState(direction, false);
           bot.setControlState('jump', false);
           moving = false;
-          console.log("🛑 Stopped.");
-        }, 2000);
+          console.log("🛑 Dừng lại.");
+          setTimeout(randomMove, 6000 + Math.random() * 6000);
+        }, 1500 + Math.random() * 1000);
       } else {
-        console.log(`⛔ Blocked moving ${direction}, skipping.`);
+        console.log(`⛔ Bị chặn khi đi ${direction}, bỏ qua.`);
+        setTimeout(randomMove, 6000 + Math.random() * 6000);
       }
-    }, 8000); // Di chuyển nhẹ mỗi 8s
+    }
 
-    // Xoay đầu ngẫu nhiên để fake hoạt động
-    setInterval(() => {
+    // Xoay đầu nhìn xung quanh ngẫu nhiên
+    function randomLook() {
       const yaw = Math.random() * Math.PI * 2;
       const pitch = Math.random() * 0.5 - 0.25;
       bot.look(yaw, pitch, true);
-      console.log("👀 Bot changed look direction.");
-    }, 10000); // Mỗi 10s quay đầu
+      console.log("👀 Bot nhìn hướng khác.");
+      setTimeout(randomLook, 8000 + Math.random() * 4000);
+    }
+
+    setTimeout(randomMove, 5000);
+    setTimeout(randomLook, 3000);
   });
 
   bot.on('end', () => {
-    console.log("❌ Bot bị disconnect (có thể do Aternos tắt server), reconnect sau 5s...");
+    console.log("❌ Bot bị disconnect. Reconnect sau 5s...");
     setTimeout(createBot, 5000);
   });
 
   bot.on('error', (err) => {
-    console.log(`❗ Error: ${err.message}`);
+    console.log(`❗ Lỗi: ${err.message}`);
     if (err.code === 'ECONNRESET') {
-      console.log("🔁 ECONNRESET! Reconnecting in 5s...");
+      console.log("🔁 Lỗi mạng, thử lại sau 5s...");
       setTimeout(createBot, 5000);
     }
   });
 
-  bot.on('kicked', (reason, loggedIn) => {
+  bot.on('kicked', (reason) => {
     console.log(`💥 Bot bị kick: ${reason}`);
-    setTimeout(createBot, 5000);
+    if (reason.toLowerCase().includes("ban")) {
+      console.warn("🚨 Có thể bị ban vĩnh viễn, không reconnect.");
+    } else {
+      setTimeout(createBot, 5000);
+    }
+  });
+
+  // Chat phản hồi nếu bị nghi là bot
+  bot.on('chat', (username, message) => {
+    if (username === bot.username) return;
+    if (message.toLowerCase().includes('bot')) {
+      bot.chat('Tớ không phải bot đâu nha 🤖👀');
+    }
   });
 }
+
+// Giữ app sống (Replit/Railway)
+setInterval(() => {
+  require('http').get("http://localhost:3000");
+}, 280000);
 
 createBot();
