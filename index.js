@@ -11,16 +11,16 @@ const directions = ['forward', 'back', 'left', 'right'];
 
 function createBot() {
   bot = mineflayer.createBot({
-    host: "letmecookVN.aternos.me", // ← Server IP
-    port: 46967,                    // ← Server port
-    username: "TuanDev",           // ← Tên bot (nên đặt giống người chơi thật)
-    version: false                 // ← Tự chọn version theo server
+    host: "letmecookVN.aternos.me",
+    port: 46967,
+    username: "TuanDev",
+    version: false
   });
 
   bot.on('spawn', () => {
     console.log("✅ Bot đã vào server!");
 
-    // Di chuyển random để tránh AFK detect
+    // 🧭 Di chuyển ngẫu nhiên
     function randomMove() {
       if (!bot.player || !bot.player.entity || moving) return;
 
@@ -59,46 +59,63 @@ function createBot() {
       }
     }
 
-    // Xoay đầu nhìn xung quanh ngẫu nhiên
+    // 👀 Nhìn xung quanh
     function randomLook() {
       const yaw = Math.random() * Math.PI * 2;
       const pitch = Math.random() * 0.5 - 0.25;
       bot.look(yaw, pitch, true);
-      console.log("👀 Bot nhìn hướng khác.");
+      console.log("👀 Nhìn hướng khác.");
       setTimeout(randomLook, 8000 + Math.random() * 4000);
     }
 
+    // 🧍 Fake hành vi nhẹ: sneak / sprint / jump
+    function fakeIdleAction() {
+      const actions = ['sneak', 'sprint', 'jump'];
+      const action = actions[Math.floor(Math.random() * actions.length)];
+      bot.setControlState(action, true);
+      console.log(`🎭 Giả vờ ${action}...`);
+
+      setTimeout(() => {
+        bot.setControlState(action, false);
+        console.log(`🔚 Dừng ${action}`);
+        setTimeout(fakeIdleAction, 12000 + Math.random() * 10000);
+      }, 1000 + Math.random() * 2000);
+    }
+
+    // 🔁 Đổi slot hotbar ngẫu nhiên
+    function changeHotbarSlot() {
+      const slot = Math.floor(Math.random() * 9);
+      bot.setQuickBarSlot(slot);
+      console.log(`🎯 Chuyển slot sang ${slot}`);
+      setTimeout(changeHotbarSlot, 15000 + Math.random() * 10000);
+    }
+
+    // Bắt đầu các hành vi
     setTimeout(randomMove, 5000);
     setTimeout(randomLook, 3000);
+    setTimeout(fakeIdleAction, 10000);
+    setTimeout(changeHotbarSlot, 20000);
   });
 
   bot.on('end', () => {
-    console.log("❌ Bot bị disconnect. Reconnect sau 5s...");
+    console.log("❌ Mất kết nối, thử lại sau 5s...");
     setTimeout(createBot, 5000);
   });
 
   bot.on('error', (err) => {
     console.log(`❗ Lỗi: ${err.message}`);
     if (err.code === 'ECONNRESET') {
-      console.log("🔁 Lỗi mạng, thử lại sau 5s...");
+      console.log("🔁 Kết nối bị reset. Thử lại sau 5s...");
       setTimeout(createBot, 5000);
     }
   });
 
   bot.on('kicked', (reason) => {
-    console.log(`💥 Bot bị kick: ${reason}`);
+    console.log(`💥 Bị kick: ${reason}`);
     if (reason.toLowerCase().includes("ban")) {
-      console.warn("🚨 Có thể bị ban vĩnh viễn, không reconnect.");
+      console.warn("🚨 Có thể bị ban! Không reconnect nữa.");
     } else {
       setTimeout(createBot, 5000);
-    }
-  });
-
-  // Chat phản hồi nếu bị nghi là bot
-  bot.on('chat', (username, message) => {
-    if (username === bot.username) return;
-    if (message.toLowerCase().includes('bot')) {
-      bot.chat('Tớ không phải bot đâu nha 🤖👀');
     }
   });
 }
