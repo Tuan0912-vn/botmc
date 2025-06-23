@@ -1,7 +1,7 @@
 {
   "name": "minecraft-afk-bot",
   "version": "1.0.0",
-  "description": "AFK bot chống ban qua đêm với mineflayer",
+  "description": "Bot AFK tự nhiên, không chat, tránh bị ban",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
