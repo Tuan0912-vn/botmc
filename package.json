@@ -1,16 +1,15 @@
 {
-  "name": "afk-bot",
+  "name": "minecraft-afk-bot",
   "version": "1.0.0",
-  "description": "AFK Minecraft bot for Aternos (auto reconnect, anti-AFK, web keepalive)",
+  "description": "AFK bot chống ban qua đêm với mineflayer",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
+  "author": "Tuan",
+  "license": "MIT",
   "dependencies": {
-    "express": "^4.18.4",
-    "mineflayer": "^4.15.1"
-  },
-  "keywords": ["minecraft", "bot", "mineflayer", "afk", "aternos"],
-  "author": "Tuấn",
-  "license": "MIT"
+    "express": "^4.18.2",
+    "mineflayer": "^4.13.0"
+  }
 }
